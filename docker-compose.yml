@@ -1,0 +1,53 @@
+version: "3.9"
+
+networks:
+  app-net-dev:
+    driver: bridge
+
+services:
+
+  postgres:
+    image: docker.io/bitnami/postgresql:16
+    container_name: postgres
+    env_file:
+      - ./database.env
+    restart:
+      always
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - app-net-dev
+    ports:
+      - "5005:5432"
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:25.0.0
+    command:
+      - start
+    container_name: keycloak
+    env_file:
+      - ./keycloak.env
+    ports:
+      - "8282:8080"
+    depends_on:
+      - postgres
+    restart:
+      always
+    networks:
+      - app-net-dev
+
+  nginx:
+    build:
+      context: .
+      dockerfile: nginx/Dockerfile
+    container_name: nginx
+    ports:
+      - "2443:80"
+    depends_on:
+      - keycloak
+    networks:
+      - app-net-dev
+
+
+volumes:
+  postgres_data:
