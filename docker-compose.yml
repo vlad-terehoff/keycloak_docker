@@ -45,6 +45,10 @@ services:
       - "2443:80"
     depends_on:
       - keycloak
+
+    restart:
+      always
+
     networks:
       - app-net-dev
 
